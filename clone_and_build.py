@@ -24,9 +24,9 @@ def clone_pkpy_repo(local_path: str = './pocketpy') -> repo.Repo:
         sys.exit(1)
 
 def tags_filter(tags: list) -> list:
-    """Filter tag version above v1.0.0
+    """Filter tag version above v1.1.0(include v1.1.0)
     """
-    base_ver = version.parse('1.0.0')
+    base_ver = version.parse('1.1.0')
     ret_tags = []
     for tag in tags:
         try:
@@ -53,22 +53,33 @@ def build_repo(pkpy_repo:repo.Repo, tag: TagReference | BranchAsTag) -> None:
     os.mkdir(f'All_in_one/{tag.name}')
     # build the current version of pkpy
     os.chdir('pocketpy')
-    assert os.system("python prebuild.py") == 0
+    assert os.system('python prebuild.py') == 0
     
-    if os.path.exists("build"):
-        shutil.rmtree("build")
-    os.mkdir("build")
+    if os.path.exists('build'):
+        shutil.rmtree('build')
+    os.mkdir('build')
         
     os.chdir('build')
-    code = os.system('cmake .. -DPK_BUILD_STATIC_MAIN=ON -DPK_ENABLE_OS=ON -DPK_ENABLE_THREADS=OFF -DPK_ENABLE_DETERMINISM=OFF -DPK_ENABLE_WATCHDOG=OFF -DPK_ENABLE_CUSTOM_SNAME=OFF -DPK_ENABLE_MIMALLOC=OFF -DPK_BUILD_MODULE_LZ4=OFF -DPK_BUILD_MODULE_LIBHV=OFF -DCMAKE_BUILD_TYPE=Release')
+    code = os.system('cmake .. -DPK_ENABLE_OS=ON -DPK_ENABLE_THREADS=OFF -DPK_ENABLE_DETERMINISM=OFF -DPK_ENABLE_WATCHDOG=OFF -DPK_ENABLE_CUSTOM_SNAME=OFF -DPK_ENABLE_MIMALLOC=OFF -DPK_BUILD_MODULE_LZ4=OFF -DPK_BUILD_MODULE_LIBHV=OFF -DCMAKE_BUILD_TYPE=Release')
     assert code == 0
     code = os.system(f'cmake --build . --config Release')
     assert code == 0
     
-    if sys.platform == "win32":
-        shutil.copy(f"Release/main.exe", f"../../All_in_one/{tag.name}/main.exe")
+    if sys.platform == 'win32':
+        shutil.copy(f'Release/main.exe', f'../../All_in_one/{tag.name}/main.exe')
+        dll_path = f'Release/pocketpy.dll'
+        if os.path.exists(dll_path):
+            shutil.copy(dll_path, f'../../All_in_one/{tag.name}/pocketpy.dll')
+    elif sys.platform == 'darwin':
+        shutil.copy('main', '../All_in_one/{tag.name}/main')
+        dll_path = 'libpocketpy.dylib'
+        if os.path.exists(dll_path):
+            shutil.copy(dll_path, f'../All_in_one/{tag.name}/libpocketpy.dylib')
     else:
-        shutil.copy("main", f"../../All_in_one/{tag.name}/main")
+        shutil.copy('main', f'../All_in_one/{tag.name}/main')
+        dll_path = 'libpocketpy.so'
+        if os.path.exists(dll_path):
+            shutil.copy(dll_path, f'../All_in_one/{tag.name}/libpocketpy.so')
     
     os.chdir('../..')
 
