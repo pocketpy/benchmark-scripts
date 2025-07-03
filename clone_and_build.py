@@ -1,6 +1,8 @@
 import os
 import sys
+import subprocess
 import shutil
+import time
 from git import repo
 from git import TagReference
 from packaging import version
@@ -39,53 +41,62 @@ def tags_filter(tags: list) -> list:
     ret_tags.append(main)
     return ret_tags
     
-def build_repo(pkpy_repo:repo.Repo, tag: TagReference | BranchAsTag) -> None:
+def build_repo(pkpy_repo:repo.Repo, tag: TagReference | BranchAsTag) -> float:
     """Build the repo with specific tag/branch static, copy excutable into
     the corresponding folder
     """
     pkpy_repo.git.checkout('-f', tag.name)
     # build dir All_in_one/{tag}
     assert os.path.exists('pocketpy')
+    if os.path.exists('pocketpy/build'):
+        shutil.rmtree('pocketpy/build')
+
     if not os.path.exists('All_in_one'):
         os.mkdir('All_in_one')
     if os.path.exists(f'All_in_one/{tag.name}'):
         shutil.rmtree(f'All_in_one/{tag.name}')
     os.mkdir(f'All_in_one/{tag.name}')
     # build the current version of pkpy
-    os.chdir('pocketpy')
-    assert os.system('python prebuild.py') == 0
+    try:
+        subprocess.run('python prebuild.py', cwd='pocketpy', stderr=subprocess.PIPE)
+    except subprocess.CalledProcessError as e:
+        print(f'prebuild.py run failed with return code {e.returncode}: {e.stderr}')
     
-    if os.path.exists('build'):
-        shutil.rmtree('build')
-    os.mkdir('build')
-        
-    os.chdir('build')
-    code = os.system('cmake .. -DPK_ENABLE_OS=ON -DPK_ENABLE_THREADS=OFF -DPK_ENABLE_DETERMINISM=OFF -DPK_ENABLE_WATCHDOG=OFF -DPK_ENABLE_CUSTOM_SNAME=OFF -DPK_ENABLE_MIMALLOC=OFF -DPK_BUILD_MODULE_LZ4=OFF -DPK_BUILD_MODULE_LIBHV=OFF -DCMAKE_BUILD_TYPE=Release')
-    assert code == 0
-    code = os.system(f'cmake --build . --config Release')
-    assert code == 0
+    start_time = time.perf_counter()
+    subprocess.run('cmake -B build -S . -DPK_ENABLE_OS=ON -DPK_ENABLE_THREADS=OFF -DPK_ENABLE_DETERMINISM=OFF -DPK_ENABLE_WATCHDOG=OFF -DPK_ENABLE_CUSTOM_SNAME=OFF -DPK_ENABLE_MIMALLOC=OFF -DPK_BUILD_MODULE_LZ4=OFF -DPK_BUILD_MODULE_LIBHV=OFF -DCMAKE_BUILD_TYPE=Release',
+                   cwd='pocketpy', check=True)
+    subprocess.run(f'cmake --build build --config Release', cwd = 'pocketpy', check=True)
+    elapsed_time = time.perf_counter() - start_time
     
     if sys.platform == 'win32':
-        shutil.copy(f'Release/main.exe', f'../../All_in_one/{tag.name}/main.exe')
-        dll_path = f'Release/pocketpy.dll'
+        shutil.copy(f'pocketpy/build/Release/main.exe', f'All_in_one/{tag.name}/main.exe')
+        dll_path = f'pocketpy/build/Release/pocketpy.dll'
         if os.path.exists(dll_path):
-            shutil.copy(dll_path, f'../../All_in_one/{tag.name}/pocketpy.dll')
+            shutil.copy(dll_path, f'All_in_one/{tag.name}/pocketpy.dll')
     elif sys.platform == 'darwin':
-        shutil.copy('main', '../All_in_one/{tag.name}/main')
-        dll_path = 'libpocketpy.dylib'
+        shutil.copy('pocketpy/build/main', 'All_in_one/{tag.name}/main')
+        dll_path = 'pocketpy/build/ibpocketpy.dylib'
         if os.path.exists(dll_path):
-            shutil.copy(dll_path, f'../All_in_one/{tag.name}/libpocketpy.dylib')
+            shutil.copy(dll_path, f'All_in_one/{tag.name}/libpocketpy.dylib')
     else:
-        shutil.copy('main', f'../All_in_one/{tag.name}/main')
-        dll_path = 'libpocketpy.so'
+        shutil.copy('pocketpy/build/main', f'All_in_one/{tag.name}/main')
+        dll_path = 'pocketpy/build/libpocketpy.so'
         if os.path.exists(dll_path):
-            shutil.copy(dll_path, f'../All_in_one/{tag.name}/libpocketpy.so')
+            shutil.copy(dll_path, f'All_in_one/{tag.name}/libpocketpy.so')
     
-    os.chdir('../..')
-
+    return elapsed_time
 
 pkpy_repo = clone_pkpy_repo()
 
 tag_list = tags_filter(pkpy_repo.tags)
-for tag in reversed(tag_list):
-    build_repo(pkpy_repo, tag)
+
+# build_repo also has 'All_in_one' path check, if the code run for the first time, log will need the following code
+if not os.path.exists('All_in_one'):
+    os.mkdir('All_in_one')
+
+with open('All_in_one/log.txt', 'w') as fp:
+    fp.write(f'Building pocketpy with shared compilation, v1.1.0 - latest release, including main branch version.\n')
+    for tag in reversed(tag_list):
+        elapsed_time = build_repo(pkpy_repo, tag)
+        fp.write(f'{tag.name}:\t{elapsed_time:.2f}s\n')
+        fp.flush()
