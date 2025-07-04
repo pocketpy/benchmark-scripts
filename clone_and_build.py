@@ -95,7 +95,7 @@ def build_repo(pkpy_repo:repo.Repo, tag: Union[TagReference, BranchAsTag]) -> fl
             shutil.copy(dll_path, f"All_in_one/pkpy-{tag.name.lstrip('v')}/pocketpy.dll")
     elif sys.platform == 'darwin':
         shutil.copy('pocketpy/build/main', f"All_in_one/pkpy-{tag.name.lstrip('v')}/main")
-        dll_path = 'pocketpy/build/ibpocketpy.dylib'
+        dll_path = 'pocketpy/build/libpocketpy.dylib'
         if os.path.exists(dll_path):
             shutil.copy(dll_path, f"All_in_one/pkpy-{tag.name.lstrip('v')}/libpocketpy.dylib")
     else:
