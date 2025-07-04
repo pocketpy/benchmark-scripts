@@ -3,6 +3,7 @@ import sys
 import subprocess
 import shutil
 import time
+from typing import Union
 from git import repo
 from git import TagReference
 from packaging import version
@@ -41,7 +42,7 @@ def tags_filter(tags: list) -> list:
     ret_tags.append(main)
     return ret_tags
     
-def build_repo(pkpy_repo:repo.Repo, tag: TagReference | BranchAsTag) -> float:
+def build_repo(pkpy_repo:repo.Repo, tag: Union[TagReference, BranchAsTag]) -> float:
     """Build the repo with specific tag/branch static, copy excutable into
     the corresponding folder
     """
@@ -58,14 +59,33 @@ def build_repo(pkpy_repo:repo.Repo, tag: TagReference | BranchAsTag) -> float:
     os.mkdir(f"All_in_one/pkpy-{tag.name.lstrip('v')}")
     # build the current version of pkpy
     try:
-        subprocess.run('python prebuild.py', cwd='pocketpy', stderr=subprocess.PIPE)
+        subprocess.run([sys.executable, 'prebuild.py'], cwd='pocketpy', stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
         print(f'prebuild.py run failed with return code {e.returncode}: {e.stderr}')
-    
+    cmake_cmd = [
+    "cmake",
+    "-B", "build",
+    "-S", ".",
+    "-DPK_ENABLE_OS=ON",
+    "-DPK_ENABLE_THREADS=OFF",
+    "-DPK_ENABLE_DETERMINISM=OFF",
+    "-DPK_ENABLE_WATCHDOG=OFF",
+    "-DPK_ENABLE_CUSTOM_SNAME=OFF",
+    "-DPK_ENABLE_MIMALLOC=OFF",
+    "-DPK_BUILD_MODULE_LZ4=OFF",
+    "-DPK_BUILD_MODULE_LIBHV=OFF",
+    "-DCMAKE_BUILD_TYPE=Release"
+    ]
+
+    build_cmd = [
+        "cmake",
+        "--build", "build",
+        "--config", "Release"
+    ]
     start_time = time.perf_counter()
-    subprocess.run('cmake -B build -S . -DPK_ENABLE_OS=ON -DPK_ENABLE_THREADS=OFF -DPK_ENABLE_DETERMINISM=OFF -DPK_ENABLE_WATCHDOG=OFF -DPK_ENABLE_CUSTOM_SNAME=OFF -DPK_ENABLE_MIMALLOC=OFF -DPK_BUILD_MODULE_LZ4=OFF -DPK_BUILD_MODULE_LIBHV=OFF -DCMAKE_BUILD_TYPE=Release',
+    subprocess.run(cmake_cmd,
                    cwd='pocketpy', check=True)
-    subprocess.run(f'cmake --build build --config Release', cwd = 'pocketpy', check=True)
+    subprocess.run(build_cmd, cwd = 'pocketpy', check=True)
     elapsed_time = time.perf_counter() - start_time
     
     if sys.platform == 'win32':
