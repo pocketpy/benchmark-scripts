@@ -53,9 +53,9 @@ def build_repo(pkpy_repo:repo.Repo, tag: TagReference | BranchAsTag) -> float:
 
     if not os.path.exists('All_in_one'):
         os.mkdir('All_in_one')
-    if os.path.exists(f'All_in_one/pkpy-{tag.name.lstrip('v')}'):
-        shutil.rmtree(f'All_in_one/pkpy-{tag.name.lstrip('v')}')
-    os.mkdir(f'All_in_one/pkpy-{tag.name.lstrip('v')}')
+    if os.path.exists(f"All_in_one/pkpy-{tag.name.lstrip('v')}"):
+        shutil.rmtree(f"All_in_one/pkpy-{tag.name.lstrip('v')}")
+    os.mkdir(f"All_in_one/pkpy-{tag.name.lstrip('v')}")
     # build the current version of pkpy
     try:
         subprocess.run('python prebuild.py', cwd='pocketpy', stderr=subprocess.PIPE)
@@ -69,20 +69,20 @@ def build_repo(pkpy_repo:repo.Repo, tag: TagReference | BranchAsTag) -> float:
     elapsed_time = time.perf_counter() - start_time
     
     if sys.platform == 'win32':
-        shutil.copy(f'pocketpy/build/Release/main.exe', f'All_in_one/pkpy-{tag.name.lstrip('v')}/main.exe')
+        shutil.copy(f'pocketpy/build/Release/main.exe', f"All_in_one/pkpy-{tag.name.lstrip('v')}/main.exe")
         dll_path = f'pocketpy/build/Release/pocketpy.dll'
         if os.path.exists(dll_path):
-            shutil.copy(dll_path, f'All_in_one/pkpy-{tag.name.lstrip('v')}/pocketpy.dll')
+            shutil.copy(dll_path, f"All_in_one/pkpy-{tag.name.lstrip('v')}/pocketpy.dll")
     elif sys.platform == 'darwin':
-        shutil.copy('pocketpy/build/main', f'All_in_one/pkpy-{tag.name.lstrip('v')}/main')
+        shutil.copy('pocketpy/build/main', f"All_in_one/pkpy-{tag.name.lstrip('v')}/main")
         dll_path = 'pocketpy/build/ibpocketpy.dylib'
         if os.path.exists(dll_path):
-            shutil.copy(dll_path, f'All_in_one/pkpy-{tag.name.lstrip('v')}/libpocketpy.dylib')
+            shutil.copy(dll_path, f"All_in_one/pkpy-{tag.name.lstrip('v')}/libpocketpy.dylib")
     else:
-        shutil.copy('pocketpy/build/main', f'All_in_one/pkpy-{tag.name.lstrip('v')}/main')
+        shutil.copy('pocketpy/build/main', f"All_in_one/pkpy-{tag.name.lstrip('v')}/main")
         dll_path = 'pocketpy/build/libpocketpy.so'
         if os.path.exists(dll_path):
-            shutil.copy(dll_path, f'All_in_one/pkpy-{tag.name.lstrip('v')}/libpocketpy.so')
+            shutil.copy(dll_path, f"All_in_one/pkpy-{tag.name.lstrip('v')}/libpocketpy.so")
     
     return elapsed_time
 
