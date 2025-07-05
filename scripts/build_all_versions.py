@@ -34,9 +34,8 @@ def tags_filter(tags: list[TagReference]) -> list[TagReference]:
     return ret_tags
     
 def build_repo(pkpy_repo: repo.Repo, tag: Union[TagReference, BranchAsTag]) -> float:
-    """Build the repo with specific tag/branch static, copy excutable into
-    the corresponding folder
-    """
+    print(f'Building {tag.name}')
+    
     pkpy_repo.git.checkout('-f', tag.name)
     # build dir {OUTPUT_DIR}/{tag}
     assert os.path.exists('pocketpy')
@@ -55,6 +54,7 @@ def build_repo(pkpy_repo: repo.Repo, tag: Union[TagReference, BranchAsTag]) -> f
         "-S", ".",
         "-DPK_ENABLE_OS=ON",
         "-DPK_ENABLE_THREADS=OFF",
+        "-DPK_USE_BOX2D=OFF",
         "-DCMAKE_BUILD_TYPE=Release"
     ]
 

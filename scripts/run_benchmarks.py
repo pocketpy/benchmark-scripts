@@ -12,7 +12,7 @@ def test_file(filepath, cpython=False, prefix='.'):
     if sys.platform == 'win32':
         code = os.system(f"{prefix}\\main.exe " + filepath)
     else:
-        code = os.system(f"{prefix}/main " + filepath)
+        code = os.system(f"cd {prefix} && ./main " + filepath)
     elapsed_time = time.perf_counter() - start_time
     return (code == 0), elapsed_time
 
