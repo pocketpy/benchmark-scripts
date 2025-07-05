@@ -16,12 +16,12 @@ jobs:
     - name: Compile
       shell: bash
       run: |
-        python clone_and_build.py
+        python build_all_versions.py
         ls
     - uses: actions/upload-artifact@v4
       with:
         name: windows
-        path: All_in_one
+        path: output
   build_linux:
     runs-on: ubuntu-22.04
     steps:
@@ -37,14 +37,14 @@ jobs:
         pip install -r requirements.txt
     - name: Compile
       run: |
-        python clone_and_build.py
+        python build_all_versions.py
         ls
       env:
         CC: clang
     - uses: actions/upload-artifact@v4
       with:
         name: linux
-        path: All_in_one
+        path: output
   build_darwin:
     runs-on: macos-latest
     steps:
@@ -55,12 +55,12 @@ jobs:
         pip install -r requirements.txt
     - name: Compile
       run: |
-        python clone_and_build.py
+        python build_all_versions.py
         ls
     - uses: actions/upload-artifact@v4
       with:
         name: darwin
-        path: All_in_one
+        path: output
 
   merge:
       runs-on: ubuntu-latest
