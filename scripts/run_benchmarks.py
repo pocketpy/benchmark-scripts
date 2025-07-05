@@ -76,6 +76,6 @@ if __name__ == "__main__":
     # tag as index
     df = pd.DataFrame(data)
     df.set_index('tag', inplace=True, drop=True)
-    df.to_csv('output/benchmark_results.csv', index=True)
+    df.to_csv('output/results.csv', index=True)
 
     print("ALL TESTS PASSED")

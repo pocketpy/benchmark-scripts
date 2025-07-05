@@ -21,7 +21,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: windows
-        path: output
+        path: output/results.csv
   build_linux:
     runs-on: ubuntu-22.04
     steps:
@@ -44,7 +44,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: linux
-        path: output
+        path: output/results.csv
   build_darwin:
     runs-on: macos-latest
     steps:
@@ -60,7 +60,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: darwin
-        path: output
+        path: output/results.csv
 
   merge:
       runs-on: ubuntu-latest
