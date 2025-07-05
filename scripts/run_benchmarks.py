@@ -50,9 +50,14 @@ def test_dir(path, prefix: str):
     return result
 
 
+import platform
+import psutil
+
 if __name__ == "__main__":
     print('CPython:', str(sys.version).replace('\n', ''))
     print('System:', '64-bit' if sys.maxsize > 2**32 else '32-bit')
+    print('CPU:', platform.processor())
+    print('RAM:', f"{psutil.virtual_memory().total / (1024 ** 3):.2f} GB")
 
     data = []
 
