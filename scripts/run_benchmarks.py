@@ -19,7 +19,11 @@ def test_file(filepath, cpython=False, prefix='.'):
 
 def iter_outputs(root='output'):
     entries = os.listdir(root)
-    entries.sort()
+    entries.sort(reverse=True)
+    
+    entries.remove('pkpy-main')
+    entries.insert(0, 'pkpy-main')  # Ensure the main version is first
+
     for entry in entries:
         path = os.path.join(root, entry)
         if os.path.isdir(path):

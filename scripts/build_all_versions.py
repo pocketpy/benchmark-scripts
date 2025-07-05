@@ -100,10 +100,11 @@ def build_repo(pkpy_repo: repo.Repo, tag: Union[TagReference, BranchAsTag]) -> f
 
 
 if __name__ == "__main__":
-    code = os.system('git clone https://github.com/pocketpy/pocketpy.git')
-    if code != 0:
-        print("Failed to clone the repository. Please check your network connection or the repository URL.")
-        exit(1)
+    if not os.path.exists('pocketpy'):
+        code = os.system('git clone https://github.com/pocketpy/pocketpy.git')
+        if code != 0:
+            print("Failed to clone the repository. Please check your network connection or the repository URL.")
+            exit(1)
 
     pkpy_repo = repo.Repo('pocketpy')
 
