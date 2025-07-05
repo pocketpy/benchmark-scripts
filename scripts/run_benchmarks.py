@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import pandas as pd
+import json
 
 
 def test_file(filepath, cpython=False, prefix='.'):
@@ -30,6 +31,11 @@ def test_dir(path, prefix: str):
     print("Testing directory:", path, prefix)
 
     result = {}
+    with open(os.path.join(prefix, 'compile_time.json'), 'r') as f:
+        compile_time = json.load(f)
+        result['config'] = compile_time.get('config_time', float('nan'))
+        result['build'] = compile_time.get('build_time', float('nan'))
+
     blacklist = {'dumps_loads_pkl.py', 'dumps_loads_json.py', 'ldtk_json.py'}
     for filename in sorted(os.listdir(path)):
         if not filename.endswith('.py'):
@@ -70,6 +76,6 @@ if __name__ == "__main__":
     # tag as index
     df = pd.DataFrame(data)
     df.set_index('tag', inplace=True, drop=True)
-    df.to_csv('benchmark_results.csv', index=True)
+    df.to_csv('output/benchmark_results.csv', index=True)
 
     print("ALL TESTS PASSED")

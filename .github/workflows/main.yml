@@ -16,8 +16,8 @@ jobs:
     - name: Compile
       shell: bash
       run: |
-        python build_all_versions.py
-        ls
+        python scripts/build_all_versions.py
+        python scripts/run_benchmarks.py
     - uses: actions/upload-artifact@v4
       with:
         name: windows
@@ -37,8 +37,8 @@ jobs:
         pip install -r requirements.txt
     - name: Compile
       run: |
-        python build_all_versions.py
-        ls
+        python scripts/build_all_versions.py
+        python scripts/run_benchmarks.py
       env:
         CC: clang
     - uses: actions/upload-artifact@v4
@@ -55,8 +55,8 @@ jobs:
         pip install -r requirements.txt
     - name: Compile
       run: |
-        python build_all_versions.py
-        ls
+        python scripts/build_all_versions.py
+        python scripts/run_benchmarks.py
     - uses: actions/upload-artifact@v4
       with:
         name: darwin

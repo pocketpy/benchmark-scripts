@@ -7,6 +7,8 @@ from typing import Union
 from git import repo
 from git import TagReference
 from packaging import version
+import json
+
 
 OUTPUT_DIR = "output"
 
@@ -31,7 +33,7 @@ def tags_filter(tags: list[TagReference]) -> list[TagReference]:
     ret_tags.append(main)
     return ret_tags
     
-def build_repo(pkpy_repo:repo.Repo, tag: Union[TagReference, BranchAsTag]) -> float:
+def build_repo(pkpy_repo: repo.Repo, tag: Union[TagReference, BranchAsTag]) -> float:
     """Build the repo with specific tag/branch static, copy excutable into
     the corresponding folder
     """
@@ -48,12 +50,12 @@ def build_repo(pkpy_repo:repo.Repo, tag: Union[TagReference, BranchAsTag]) -> fl
     except subprocess.CalledProcessError as e:
         print(f'prebuild.py run failed with return code {e.returncode}: {e.stderr}')
     cmake_cmd = [
-    "cmake",
-    "-B", "build",
-    "-S", ".",
-    "-DPK_ENABLE_OS=ON",
-    "-DPK_ENABLE_THREADS=OFF",
-    "-DCMAKE_BUILD_TYPE=Release"
+        "cmake",
+        "-B", "build",
+        "-S", ".",
+        "-DPK_ENABLE_OS=ON",
+        "-DPK_ENABLE_THREADS=OFF",
+        "-DCMAKE_BUILD_TYPE=Release"
     ]
 
     build_cmd = [
@@ -62,10 +64,21 @@ def build_repo(pkpy_repo:repo.Repo, tag: Union[TagReference, BranchAsTag]) -> fl
         "--config", "Release",
         "--parallel", str(os.cpu_count() or 1),
     ]
-    start_time = time.perf_counter()
+    _0 = time.perf_counter()
     subprocess.run(cmake_cmd, cwd='pocketpy', check=True)
+    _1 = time.perf_counter()
     subprocess.run(build_cmd, cwd='pocketpy', check=True)
-    elapsed_time = time.perf_counter() - start_time
+    _2 = time.perf_counter()
+
+    compile_time = {
+        'config_time': _1 - _0,
+        'build_time': _2 - _1,
+    }
+
+    with open(f"{OUTPUT_DIR}/pkpy-{tag.name}/compile_time.json", 'w') as f:
+        json.dump(compile_time, f)
+
+    elapsed_time = _2 - _0
     
     if sys.platform == 'win32':
         shutil.copy(f'pocketpy/build/Release/main.exe', f"{OUTPUT_DIR}/pkpy-{tag.name}/main.exe")
@@ -107,4 +120,3 @@ if __name__ == "__main__":
         for tag in reversed(tag_list):
             elapsed_time = build_repo(pkpy_repo, tag)
             fp.write(f'{tag.name}:\t{elapsed_time:.2f}s\n')
-            fp.flush()
