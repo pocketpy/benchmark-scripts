@@ -1,3 +1,4 @@
 # requirements.txt
 gitpython
 packaging
+pandas

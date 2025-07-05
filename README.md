@@ -4,3 +4,16 @@ The executables are generated through dynamic compilation, including all release
 
 ## Issues
 - github workflow is needed to upload artifacts
+
+
+## Build
+
+```
+python build_all_versions.py
+```
+
+## Run benchmarks
+
+```
+python scripts/run_benchmarks.py
+```

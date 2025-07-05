@@ -59,7 +59,8 @@ def build_repo(pkpy_repo:repo.Repo, tag: Union[TagReference, BranchAsTag]) -> fl
     build_cmd = [
         "cmake",
         "--build", "build",
-        "--config", "Release"
+        "--config", "Release",
+        "--parallel", str(os.cpu_count() or 1),
     ]
     start_time = time.perf_counter()
     subprocess.run(cmake_cmd, cwd='pocketpy', check=True)
