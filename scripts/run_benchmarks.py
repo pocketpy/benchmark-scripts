@@ -12,7 +12,8 @@ def test_file(filepath, cpython=False, prefix='.'):
     if sys.platform == 'win32':
         code = os.system(f"{prefix}\\main.exe " + filepath)
     else:
-        code = os.system(f"cd {prefix} && ./main " + filepath)
+        os.environ['LD_LIBRARY_PATH'] = f"{os.path.abspath(prefix)}:{os.environ.get('LD_LIBRARY_PATH', '')}"
+        code = os.system(f"{prefix}/main " + filepath)
     elapsed_time = time.perf_counter() - start_time
     return (code == 0), elapsed_time
 
