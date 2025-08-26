@@ -18,9 +18,7 @@ class BranchAsTag:
 
 
 def tags_filter(tags: list[TagReference]) -> list[TagReference]:
-    """Filter tag version above v1.1.0(include v1.1.0)
-    """
-    base_ver = version.parse('1.1.0')
+    base_ver = version.parse('1.4.0')
     ret_tags = []
     for tag in tags:
         try:
