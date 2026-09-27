@@ -92,4 +92,3 @@ jobs:
         with:
           name: all-in-one
           path: $GITHUB_WORKSPACE/output
-
